@@ -61,6 +61,78 @@
     ```
 4. 到此，我们已经把一组react元素渲染到React;
 ---
+
 ### 实现`createElement`方法
+
+1. 把JSX返回的js对象，创建成还有props、children的对象
+    ```javascript
+        const element = (
+            <div id="foo">
+                <a>bar</a>
+                <b />
+            </div>
+        )
+        //jsx转义
+        const element = React.createElement(
+            'div',
+            { id: 'foo'},
+            React.createElement('a', null, 'bar'),
+            React.createElement('b')
+        )
+        //createElement 调用之后
+        const element = {
+            type: 'div',
+            props: {
+                id: 'foo',
+                children: [{
+                    type: 'a',
+                    children: 'bar'
+                },{
+                    type: 'b'
+                }]                
+            }
+        }
+        //由此可见
+        function createElement(type, props, ...children){
+            return {
+                type,
+                props: {
+                    ...props,
+                    children
+                }
+            }
+        }
+        
+    ```
+2. 实现一个 `createElement`,为文本节点创建一个特殊的类型：`TEXT_ELEMENT`
+    ```javascript
+        function createElement(type, props, ...children){
+            return {
+                type,
+                props: {
+                    ...props,
+                    children: children.map(child)=>{
+                        return typeof child === 'object'
+                        ?child
+                        :createTextElement(child);
+                    })
+                }
+            }
+        } 
+        function createTextElement(text){
+            return {
+                type: "TEXT_ELEMENT",
+                props: {
+                    nodeValue: text,
+                    children: []
+                }
+            }
+        }    
+    ```
+    
+---
+
+### render方法
+1. 
 
 
