@@ -1,6 +1,7 @@
 # A Simple React
 [Demo](https://oneonetwo.github.io/handwrite-a-simple-react/)
-遵循React的Fiber架构，一步步实现自己的React,暂时不做优化，不实现复杂的功能；
+遵循React的Fiber架构，一步步实现自己的React,暂时不做优化，不实现复杂的功能；  
+需要了解数据结构： 树，链表
 
 我们需要做的事情: 
 - Step 1: The createElement Function
@@ -60,4 +61,6 @@
     ```
 4. 到此，我们已经把一组react元素渲染到React;
 ---
+### 实现`createElement`方法
+
 
