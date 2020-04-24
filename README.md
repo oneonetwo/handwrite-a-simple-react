@@ -86,7 +86,12 @@
                 id: 'foo',
                 children: [{
                     type: 'a',
-                    children: 'bar'
+                    props: {
+                        children: [{
+                            type: 'TEXT_ELEMENT',
+                            nodeValue: 'bar'
+                        }]
+                    }
                 },{
                     type: 'b'
                 }]                
@@ -111,7 +116,7 @@
                 type,
                 props: {
                     ...props,
-                    children: children.map(child)=>{
+                    children: children.map(child =>{
                         return typeof child === 'object'
                         ?child
                         :createTextElement(child);
@@ -129,10 +134,67 @@
             }
         }    
     ```
+3. 测试createElement
+    ```javascript
+        const element = createElement(
+            'div',
+            { id: 'foo'},
+            createElement('a', null, 'bar'),
+            createElement('b')
+        )
+    ```
     
 ---
 
-### render方法
-1. 
+### 实现render方法
 
+1. 先考虑往DOM添加内容，稍后处理更新和删除
+    ```function
+        function render(element, container){
+            const dom = document.createElement(element.type);
+            container.appendChild(dom);
+        }
+    ```
+2. 递归添加每个children
+    ```function
+        function render(element, container){
+            const dom = document.createElement(element.type);
+            element.props.children,forEach((child)=>{
+                render(child, dom);
+            })
+            container.appendChild(dom);
+        }
+    ```
+3. 处理文本节点，元素类型是TEXT_ELEMENT的文本节点
+    ```function
+        function render(element, container){
+            const dom = element.type === 'TEXT_ELEMENT'
+                        ?document.createTextNode('')
+                        :document.createElement(element.type);
+            //添加节点的属性
+            const isProperty = key => key!=='children';
+            Object.keys(element.props)
+                .filter(isProperty)
+                .forEach(name =>{
+                    dom[name] = element.props[name];
+                })
+            
+            element.props.children.forEach((child)=>{
+                render(child, dom);
+            })
+            container.appendChild(dom);
+        }
+    ```
+4. 测试render
+    ```javascript
+        const container = document.getElementById('root');
+        const element = createElement(
+            'div',
+            { id: 'foo'},
+            createElement('a', null, 'bar'),
+            createElement('b')
+        )
+        render(element, container);
+    ```
+---
 
