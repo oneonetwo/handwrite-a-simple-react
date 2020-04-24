@@ -149,14 +149,14 @@
 ### 实现render方法
 
 1. 先考虑往DOM添加内容，稍后处理更新和删除
-    ```function
+    ```javascript
         function render(element, container){
             const dom = document.createElement(element.type);
             container.appendChild(dom);
         }
     ```
 2. 递归添加每个children
-    ```function
+    ```javascript
         function render(element, container){
             const dom = document.createElement(element.type);
             element.props.children,forEach((child)=>{
@@ -166,7 +166,7 @@
         }
     ```
 3. 处理文本节点，元素类型是TEXT_ELEMENT的文本节点
-    ```function
+    ```javascript
         function render(element, container){
             const dom = element.type === 'TEXT_ELEMENT'
                         ?document.createTextNode('')
