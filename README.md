@@ -4,9 +4,9 @@
 需要了解数据结构： 树，链表
 
 我们需要做的事情: 
-- Step 1: The createElement Function
-- Step 2: The render Function
-- Step 3: Concurrent Mode
+- Step 1: createElement Function
+- Step 2: render Function
+- Step 3: 任务调度
 - Step 4: Fibers
 - Step 5: Render and Commit Phases
 - Step 6: Reconciliation
@@ -198,3 +198,39 @@
     ```
 ---
 
+### 任务调度
+1. 上面render方法中，递归渲染每个元素，一旦渲染开始，就会到整个DOM树完成才会结束，如果元素结构很复杂，那将会渲染很长的时间阻塞主线程，而且浏览器如果需要处理更高优先的操作（例如用户输入或保持动画的流畅），则需要等到渲染完成。
+2. 因此需要把工作分成多个单元来操作，在完成一个单元后，如果需要执行其他的高优先级的操作，那么让浏览器中断渲染。
+3. 我们用`requestIdleCallback`来做一个循环，react不使用requestIdleCallback,现在使用 [`scheduler`](https://react.jokcy.me/book/flow/scheduler-pkg.html) ,概念上是一样的；
+    - 因为requestIdleCallback这个 API 目前还处于草案阶段，所以浏览器实现率还不高，所以在这里 React 直接使用了polyfill的方案。这个方案简单来说是通过requestAnimationFrame在浏览器渲染一帧之前做一些处理，然后通过postMessage在macro task（类似 setTimeout）中加入一个回调，在因为接下去会进入浏览器渲染阶段，所以主线程是被 block 住的，等到渲染完了然后回来清空macro task。总体上跟requestIdleCallback差不多，等到主线程有空的时候回来调用    
+    ```javascript
+        //全局变量，当前的工作单元Fiber
+        let nextUnitOfwork = null;
+
+        //workLoop逻辑很简单的，只是判断是否需要继续调用performUnitOfWork；
+        function workloop(deadline) {
+            let shouldYield = false;
+            while(nextUnitOfwork&&!shouldYield){
+                nextUnitOfwork = performUnitOfwork(
+                    nextUnitOfwork
+                )
+                shouldYield = deadline.timeRemaining()<1;
+            }
+            requestIdleCallback(workloop);
+        }
+
+        requestIdleCallback(workloop);
+
+        function performUnitOfwork(nextUnitOfwork){
+            //TODO
+	    }
+
+    ```
+---
+
+### [Fibers](https://github.com/acdlite/react-fiber-architecture#what-is-a-fiber)
+1. Fiber
+    - 主要目的是进行**增量式渲染**，将任务切片。并且分布到多个帧；
+    - 使React充分利用scheduling的优势，
+    - A fiber represents a unit of work. 一个fiber代表一个工作单元
+2. Fiber是一个树结构，child跟sibling是一个child为首的链表；
