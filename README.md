@@ -2,7 +2,8 @@
 [Demo](https://oneonetwo.github.io/handwrite-a-simple-react/)
 遵循React的Fiber架构，一步步实现自己的React,暂时不做优化，不实现复杂的功能；  
 需要了解数据结构： 树，链表
-
+React Fiber Architecture
+https://github.com/acdlite/react-fiber-architecture
 我们需要做的事情: 
 - Step 1: createElement Function
 - Step 2: render Function
@@ -234,3 +235,8 @@
     - 使React充分利用scheduling的优势，
     - A fiber represents a unit of work. 一个fiber代表一个工作单元
 2. Fiber是一个树结构，child跟sibling是一个child为首的链表；
+3. `performUnitOfWork`方法，做三件事
+	- 添加元素到dom
+	- 为元素的children创建fiber
+	- 选择下一个next unit of work，并return
+	
