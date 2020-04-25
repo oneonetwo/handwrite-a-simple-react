@@ -246,6 +246,34 @@
 		1. 当我们完成 performing 中的fiber时，如果有child则作为下一个fiber(工作单元),如果没有孩子则找sibling作为下一个工作单元，如果没有child也没sibling，则找parent的sibling也就是叔叔，
 		2. 找fiber的过程，使用**深度优先**
 3. 代码实现
-	- 改变`render`,将创建DOM节点保留在自身的dom中，在最后commit阶段在使用；
+	- 改变`render`,将创建DOM节点保留在自身的dom中，在最后commit阶段在使用,在render函数中，设置`nextUnitOfWork`为fiber的root
+	```javascript
+		//将创建DOM节点保留在自身的dom
+		function createDom(fiber) {
+			const dom =
+				fiber.type == "TEXT_ELEMENT"
+				? document.createTextNode("")
+				: document.createElement(fiber.type)
+			const isProperty = key => key !== "children"
+			Object.keys(fiber.props)
+				.filter(isProperty)
+				.forEach(name => {
+					dom[name] = fiber.props[name]
+				})
+			return dom
+		}
+		//设置`nextUnitOfWork`为fiber的root
+		function render(element, container) {
+			nextUnitOfWork = {
+				dom: container,
+				props: {
+					children: [element],
+				}
+			}
+		}
+
+		let nextUnitOfWork = null;
+		
+	```
 	
 
