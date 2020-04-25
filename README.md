@@ -8,7 +8,7 @@
 - Step 2: render Function
 - Step 3: 任务调度
 - Step 4: 构建Fibers
-- Step 5: Render and Commit Phases
+- Step 5: Render阶段 Commit阶段
 - Step 6: Reconciliation
 - Step 7: Function Components
 - Step 8: Hooks
@@ -275,5 +275,88 @@
 		let nextUnitOfWork = null;
 		
 	```
-	
+	- 当浏览器空闲时，启动workloop，`performUnitOfWork`运行root fiber
+	```javascript
+		function performUnitOfWork(fiber){
+			//主要做三步1.add dom node  2.create new fiber  3.return next unit of work
+			//1.创建当前fiber的DOM添加到dom属性上。
+			if(!fiber.dom){
+				fiber.dom = create(fiber);
+			}			
+			if (fiber.parent) {
+				fiber.parent.dom.appendChild(fiber.dom)
+			}
+			//2.为每个child创建fiber
+			const elements = fiber.props.children;
+			let index = 0;
+			let prevSibling = null;
+			while(index<elements.length){
+				let element = elements[index];
+				let newFiber = {
+					type: element.type,
+					props: element.props,
+					parent: fiber,
+					dom: null
+				}
 
+				//创建一个兄弟链表,首个孩子为头部
+				if(index === 0){
+					fiber.child = newFiber;            
+				}else{
+					prevSibling.sibling = newFiber;
+				}
+				prevSibling = newFiber;
+				index++;
+			}
+
+			//3.找下一个fiber(工作单元)，深度优先遍历，先子后兄，再parent的兄弟
+			if(fiber.child){
+				return fiber.child;
+			}
+			let nextFiber = fiber;
+			while(nextFiber){
+				if(nextFiber.sibling){
+					return nextFiber.sibling
+				}
+				nextFiber = newFiber.parent;
+			}
+		}
+	```
+---
+
+### Render阶段 Commit阶段
+1. 这时还有个问题，当浏览器中断工作时，我们将看不到完成的UI，所以我们要修改dom挂载的部分
+	```javascript
+		function render(element, container) {
+			//设置wipRoot为根
+			wipRoot = {
+				dom: container,
+				props: {
+					children: [element],
+				},
+			}
+			nextUnitOfWork = wipRoot
+		}
+		let nextUnitOfWork = null
+		let wipRoot = null
+	```
+2. 添加commitRoot到Dom
+	```javascript
+		function workLoop(deadline) {
+			//在workloop 添加以下代码
+			//一旦没有下一个fiber 那么表示工作完成，调用commitRoot把整个fiber添加到Dom
+			if (!nextUnitOfWork && wipRoot) {
+				commitRoot()
+			}
+
+		}
+		//在commitRoot函数中将所有节点递归到dom。
+		function commitRoot() {
+		  // TODO add nodes to dom
+		}
+	```
+---
+
+### [reconciliation](https://github.com/acdlite/react-fiber-architecture#what-is-reconciliation)
+
+1. 
