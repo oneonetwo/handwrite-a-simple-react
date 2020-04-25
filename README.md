@@ -237,8 +237,8 @@
     	1. 主要目的是进行**增量式渲染**，将任务切片。并且分布到多个帧；
     	2. 使React充分利用scheduling的优势，
     	3. A fiber represents a unit of work. 一个fiber代表一个工作单元
-	- Fiber是一个**树结构**，child跟sibling是一个child为首的**链表**；
-	- <img src="http://static.irmvp.com/pro/fiber4.png">
+	- Fiber是一个**树结构**，child跟sibling是一个child为首的**链表**；  
+	![Fiber Tree](http://static.irmvp.com/pro/fiber4.png)
 2. `performUnitOfWork`方法，做三件事
     - 添加元素到dom
     - 为元素的children创建fiber
