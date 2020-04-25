@@ -352,11 +352,30 @@
 		}
 		//在commitRoot函数中将所有节点递归到dom。
 		function commitRoot() {
-		  // TODO add nodes to dom
+		  	// TODO add nodes to dom
+			commitWork(wipRoot.child)
+  			wipRoot = null
+		}
+		function commitWork(fiber){
+			if(!fiber){
+				return;
+			}
+			let parentDom = fiber.parent.dom;
+			parentDom.appendChild(fiber.dom);
+			commitWork(fiber.child);
+			commitWork(fiber.sibling);
 		}
 	```
 ---
 
 ### [reconciliation](https://github.com/acdlite/react-fiber-architecture#what-is-reconciliation)
 
-1. 
+1. 概念：
+	- 作用
+		- 比较两棵树之间的不同，确定需要更新的地方；
+		- 协调时'VDOM'背后的算法；
+	- 目的：能够以出色的性能重新渲染整个应用程序；
+	- 基于两个特征：
+		- **React对不同类型的组件直接进行替换**
+		- **对待列表元素则是根据Key进行区分，所以Key应该是可预见的，稳定的，唯一的。**
+2. 我们在完成工作提交之前需要保存currentRoot(旧树),并为每个fiber添加alternate属性，记录相对应的old fiber
