@@ -1,9 +1,8 @@
 # A Simple React
+
 [Demo](https://oneonetwo.github.io/handwrite-a-simple-react/)
 遵循React的Fiber架构，一步步实现自己的React,暂时不做优化，不实现复杂的功能；  
-需要了解数据结构： 树，链表
-React Fiber Architecture
-https://github.com/acdlite/react-fiber-architecture
+
 我们需要做的事情: 
 - Step 1: createElement Function
 - Step 2: render Function
