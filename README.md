@@ -7,7 +7,7 @@
 - Step 1: createElement Function
 - Step 2: render Function
 - Step 3: 任务调度
-- Step 4: Fibers
+- Step 4: 构建Fibers
 - Step 5: Render and Commit Phases
 - Step 6: Reconciliation
 - Step 7: Function Components
@@ -62,7 +62,7 @@
 4. 到此，我们已经把一组react元素渲染到React;
 ---
 
-### 实现`createElement`方法
+### createElement Function
 
 1. 把JSX返回的js对象，创建成还有props、children的对象
     ```javascript
@@ -146,7 +146,7 @@
     
 ---
 
-### 实现render方法
+### render Function
 
 1. 先考虑往DOM添加内容，稍后处理更新和删除
     ```javascript
@@ -198,7 +198,7 @@
     ```
 ---
 
-### 任务调度
+### [任务调度](https://github.com/acdlite/react-fiber-architecture#scheduling)
 1. 确定react何时进行更新渲染工作；
     - 上面render方法中，递归渲染每个元素，一旦渲染开始，就会到整个DOM树完成才会结束，如果元素结构很复杂，那将会渲染很长的时间阻塞主线程，而且浏览器如果需要处理更高优先的操作（例如用户输入或保持动画的流畅），则需要等到渲染完成。
     - 因此需要把工作分成多个单元来操作，在完成一个单元后，如果需要执行其他的高优先级的操作，那么让浏览器中断渲染。
@@ -231,18 +231,21 @@
     ```
 ---
 
-### [Fibers](https://github.com/acdlite/react-fiber-architecture#what-is-a-fiber)
+### [构建Fibers](https://github.com/acdlite/react-fiber-architecture#what-is-a-fiber)
 1. 概念：
 	- Fiber	
     	1. 主要目的是进行**增量式渲染**，将任务切片。并且分布到多个帧；
     	2. 使React充分利用scheduling的优势，
     	3. A fiber represents a unit of work. 一个fiber代表一个工作单元
 	- Fiber是一个**树结构**，child跟sibling是一个child为首的**链表**；
+	- <img src="http://static.irmvp.com/pro/fiber4.png">
 2. `performUnitOfWork`方法，做三件事
     - 添加元素到dom
     - 为元素的children创建fiber
     - 选择下一个next unit of work，并return  
 		1. 当我们完成 performing 中的fiber时，如果有child则作为下一个fiber(工作单元),如果没有孩子则找sibling作为下一个工作单元，如果没有child也没sibling，则找parent的sibling也就是叔叔，
 		2. 找fiber的过程，使用**深度优先**
-3. 在render中删除
+3. 代码实现
+	- 改变`render`,将创建DOM节点保留在自身的dom中，在最后commit阶段在使用；
+	
 
