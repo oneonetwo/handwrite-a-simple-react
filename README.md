@@ -10,7 +10,7 @@
 - Step 4: 构建Fibers
 - Step 5: Render阶段 Commit阶段
 - Step 6: Reconciliation
-- Step 7: 函数组件
+- Step 7: 函数组件Function Components
 - Step 8: Hooks
 ---
 ## 回顾
@@ -573,4 +573,125 @@
 
 		}
 	```
+---
+
+### 函数组件Function Components
+1. 添加对函数组件的支持
+	- 函数组件有两点不同
+		1. 函数组件中没有DOM节点；
+		2. children来自函数调用。
+	```javascript
+		function App(props) {
+		  return <h1>Hi {props.name}</h1>
+		}
+		const element = <App name="foo" />
+		const container = document.getElementById("root")
+		Didact.render(element, container)
+		
+		//jsx转化成js,
+		function App(props){
+			return CreateElement(
+				"h1",
+				null,
+				"Hi",
+				props.name
+			)
+		}
+		const element = CreateElement(App, {
+			name: 'foo',
+		})
 	
+	```
+2. 增加处理函数组件的方法
+	- 根据fiber type进行不同的处理, `updateHostComponent`方法跟之前一样，`updateFunctionComponent`来处理函数类型的组件；
+	```javascript
+		function performUnitOfWork(fiber){
+            //主要做三步1.add dom node  2.create new fiber  3.return next unit of work
+            //1.创建当前fiber的DOM添加到dom属性上。
+            const isFunctionComponent = 
+                fiber.type instanceof Function;
+            if(isFunctionComponent){
+                updateFunctionComponent(fiber);
+            }else{
+                updateHostComponent(fiber);
+            }
+
+            //3.找下一个fiber(工作单元)，深度优先遍历，先子后兄，再parent的兄弟
+            if(fiber.child){
+                return fiber.child;
+            }
+            let nextFiber = fiber;
+            while(nextFiber){
+                if(nextFiber.sibling){
+                    return nextFiber.sibling
+                }
+                nextFiber = newFiber.parent;
+            }
+        }
+
+        function updateFunctionComponent(fiber) {
+            // TODO
+        }
+        
+        function updateHostComponent(fiber) {
+            if (!fiber.dom) {
+                fiber.dom = createDom(fiber)
+            }
+            reconcileChildren(fiber, fiber.props.children)
+        }
+	```
+	- 继续实现`updateFunctionComponent`, 获取了children，`reconcileChildren`就按部就班的进行，不需要更改。
+	```javascript
+		function updateFunctionComponent(fiber) {
+            //调用函数获取children
+            const children = [fiber.type(fiber.props)];
+            reconcileChildren(fiber, children);
+        }
+	```
+	- 需要修改 `commitWork`函数，因为函数组件没有DOM节点，所以children需要挂到有DOM的patent上；
+	```javascript
+		function commitWork(fiber) {
+			if (!fiber) {
+				return
+			}
+			// s+
+			let domParentFiber = fiber.parent;
+			while(!domParentFiber.dom){
+				domParentFiber = domParentFiber.parent;
+			}
+			// e+
+			const domParent = fiber.parent.dom;
+			if(fiber.effectTag === "PLACEMENT" && fiber.dom!==null){
+				//fiber标记是PLACEMENT，则与之前相同，将DOM节点追加到父节点;
+				domParent.appendChild(fiber.dom)
+			}else if(fiber.effectTag === "UPDATE" && fiber.dom != null){
+				//fiber标记是Update，使用fiber更新现有的节点;
+				updateDOM(
+					fiber.dom,
+					fiber.alternate.props,
+					fiber.props
+				)
+			}else if(fiber.effectTag === "DELETION"){
+				//fiber标记是DELETION，则从父节点中移除当前的节点;
+				// s-
+				//domParent.removeChild(fiber.dom)
+				//s+
+					commitDeletion(fiber, domParent);
+				//e+
+			}    
+
+			commitWork(fiber.child)
+			commitWork(fiber.sibling)
+		}
+		//删除节点时，直到找到有DOM节点的子级
+		function commitDeletion(fiber, domParent){
+			if(fiber.dom){
+				domParent.removeChild(fiber.dom);
+			}else{
+				commitDeletion(fiber.child, domParent);
+			}
+		}
+	```
+---
+
+### HOOKS
