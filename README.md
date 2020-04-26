@@ -693,3 +693,95 @@
 ---
 
 ## HOOKS
+1. 我们给函数组件添加状态，示例为计数器组件
+	```javascript
+	const MReact = {
+		createElement,
+		render,
+		useState
+	}
+	function Counter(){
+		const [state, setstate] = MReact.useState(1);
+		return (
+			<h1 onClick={()=>setState(c=>c+1)}>
+				Count: { state }
+			<h1>
+		)
+	}
+	
+	const element = <Counter />
+	```
+2. 在调用函数组件之前初始化一些变量，方便再 `useState`函数内部使用他们;
+	```javascript
+	let wipFiber = null;
+	let hookIndex = null;
+	function updateFunctionComponent(fiber){
+		wipFiber = fiber;
+		//向fiber添加一个数组，支持再函数组件中调用多次，记录当前的hooks的索引;
+		hookIndex = 0;
+		wipFiber.hooks = [];
+		const children = [fiber.type(fiber.props)];
+		reconcileChildren(fiber, children);
+	}
+	```
+3. 每次函数组件被调用的时候，则useState则会被调用;
+	- 在useState内部,首先要获取state的值,先去查看alternate是否有hook,如果有则使用这个值,如果没有使用初始值，定义新的hook,push到hooks,挂到fiber;钩子索引加1,返回状态; 
+	```javascript
+	function useState(initial){
+		const oldHook = wipFiber.alternate?.hooks?.[hookIndex];
+		const hook = {
+			state: oldHook?oldHook.state:initial,
+		}
+		wipFiber.hooks.push(hook);
+		return [hook.state];
+	}
+	```
+	- `useState方法`应该还要返回一个更新状态的函数，一次定义一个`setState方法`，来接受更新动作，该动作将添加到钩子的queue中；
+	```javascript
+	function useState(initial){
+
+		const oldHook = wipFiber.alternate?.hooks?.[hookIndex];
+		const hook = {
+			state: oldHook?oldHook.state:initial,
+			queue: []
+		}
+		const actions = oldHook?oldHook.queue:[];
+		//执行queue上的动作，获取最终的状态
+		actions.forEach(action=>{
+			hook.state = action(hook.state);
+		})
+
+		//setState
+		const setState = (action)=>{
+			hook.queue.push(action);
+			//然后，我们执行与render函数中类似的操作，将当前的currentRoot设置为下一个nextUnitOfWork，以便工作循环可以开始新的渲染阶段。
+			wipRoot = {
+			  	dom: currentRoot.dom,
+			  	props: currentRoot.props,
+			  	alternate: currentRoot,
+			}
+			nextUnitOfWork = wipRoot;
+			deletions = []
+		}
+		wipFiber.hooks.push(hook);
+		hookIndex++;
+		return [hook.state, setState];
+	}
+	```
+	
+	## 引用
+	1. https://react.docschina.org/docs/design-principles.html
+	2. https://github.com/reactjs/zh-hans.reactjs.org/blob/master/content/docs/faq-internals.md
+	1. https://pomb.us/
+	
+	
+
+
+
+
+
+
+
+
+
+
