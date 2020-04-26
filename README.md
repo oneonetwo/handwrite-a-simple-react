@@ -378,4 +378,199 @@
 	- 基于两个特征：
 		- **React对不同类型的组件直接进行替换**
 		- **对待列表元素则是根据Key进行区分，所以Key应该是可预见的，稳定的，唯一的。**
-2. 我们在完成工作提交之前需要保存currentRoot(旧树),并为每个fiber添加alternate属性，记录相对应的old fiber
+2. 实现reconciliation方法
+	- 我们在完成工作提交之前需要保存currentRoot(旧树),并为每个fiber添加alternate属性，记录相对应的old fiber
+	```javascript
+		function commitRoot(){
+			//+ 
+			currentRoot = wipRoot;
+		}
+		function render(element, container){
+			//+
+			wipRoot = {
+				dom: container,
+				props: {
+					children: [element],
+				}
+				alternate: currentRoot
+			}
+			nextUnitOfWork = wipRoot;
+		}
+		//+ 全局变量
+		let currentRoot = null;
+	```
+	- 在`performUnitOfWork`提取创建fiber的代码，放到`reconcileChildren`中
+	```javascript
+		function reconcileChildren(wipFiber, elements){
+			let index = 0;    
+			//添加old fiber的子级，赋值给oldFiber;
+			let oldFiber = wipFiber.alternate?.child;
+			let prevSibling = null;
+			while(index<element.length || oldFiber!= null){
+				let element = elements[index];
+				let newFiber = null;
+
+				//比较oldFiber跟element,查看我们上是否需要进行更改
+				let sameType = element&&oldFiber&&element.type === oldFiber.type;
+				if(sameType){
+					//同类型的元素，进行 update
+				}
+				if(element && !sameType){
+					//不同类型的元素，进行 add
+				}
+				if(oldFiber && !sameType){
+					//element不存在，进行删除oldFiber
+				}
+
+				//获取链表的下一个元素，进行比较
+				if (oldFiber) {
+					oldFiber = oldFiber.sibling
+				}
+			}
+		}
+	```
+	- 继续完善，我们在Fiber上添加 `effectTag`属性，做标记；将会在commitRoot阶段使用这个属性
+	```javascript
+		function reconcileChildren(wipfiber, elements){
+			let index = 0;    
+			//添加old fiber的子级，赋值给oldFiber;
+			let oldFiber = wipfiber.alternate?.child;
+			let prevSibling = null;
+			while(index<element.length || oldFiber!= null){
+				let element = elements[index];
+				let newFiber = null;
+
+				//比较oldFiber跟element,查看我们上是否需要进行更改
+				let sameType = element&&oldFiber&&element.type === oldFiber.type;
+				if(sameType){
+					//同类型的元素，进行 update
+					//UPDATE表示更新
+					newFiber = {
+						type: element.type,
+						props: element.props,
+						dom: oldFiber.dom,
+						parent: wipFiber,
+						alternate: oldFiber,
+						effectTag: "UPDATE"
+					}
+
+				}
+				if(element && !sameType){
+					//不同类型的元素，进行 add
+					//PLACEMENT表示新增
+					newFiber = {
+						type: element.type,
+						props: element.props,
+						dom: null,
+						parent: wipFiber,
+						alternate: null,
+						effectTag: "PLACEMENT",
+					}
+				}
+				if(oldFiber && !sameType){
+					//element不存在，进行删除oldFiber,
+					//新加全局的待删除的数组 let deletions = null
+					//在render 中初始化数组 deletions = []
+					oldFiber.effectTag = "DELETION";
+					deletions.push(oldFiber);
+				}
+
+				//获取链表的下一个元素，进行比较
+				if (oldFiber) {
+					oldFiber = oldFiber.sibling
+				}
+			}
+		}
+	```
+	- 更改`commitWork`处理 effectTags
+	```javascript
+		function commitWork(fiber) {
+			if (!fiber) {
+				return
+			}
+			const domParent = fiber.parent.dom;
+			if(fiber.effectTag === "PLACEMENT" && fiber.dom!==null){
+				//fiber标记是PLACEMENT，则与之前相同，将DOM节点追加到父节点;
+				domParent.appendChild(fiber.dom)
+			}else if(fiber.effectTag === "UPDATE" && fiber.dom != null){
+				//fiber标记是Update，使用fiber更新现有的节点;
+				updateDOM(
+					fiber.dom,
+					fiber.alternate.props,
+					fiber.props
+				)
+			}else if(fiber.effectTag === "DELETION"){
+				//fiber标记是DELETION，则从父节点中移除当前的节点;
+				domParent.removeChild(fiber.dom)
+			}    
+
+			commitWork(fiber.child)
+			commitWork(fiber.sibling)
+		}
+
+		function updateDom(dom, prevProps, nextProps) {
+		  // TODO
+		}
+	```
+	- 继续 updateDom, 新旧props做对比，删除旧的prop,添加新的prop;
+	```javascript
+		const isProperty = key => key !== "children";
+		const isNew = (prev,next) => key => prev[key] !== next[key];
+		const isGone = (prev, next) => key => !(key in next);
+		
+		function updateDom(dom, prevProps, nextProps) {
+		  // TODO
+		  //删除旧的props
+			Object.keys(prevProps)
+			.filter(isProperty)
+			.filter(isGone(prevProps,nextProps))
+			.forEach((name)=>{
+				dom[name] = '';
+			})
+			//添加新的Prop 或者 改变的prop
+			Object.keys(nextProps)
+			.filter(isProperty)
+			.filter(isNew(prevProps, nextProps))
+			.forEach((name)=>{
+				dom[name] = nextProps[name];
+			})
+		}
+	```
+	- 完善updateDom(), 对特殊props 事件的处理；
+	```javascript
+		function updateDom(dom, prevProps, nextProps) {
+			//移除旧的或者改变的事件
+			Object.keys(prevProps)
+			.filter(isEvent)
+			.filter(key=>
+				!(key in nextProps) || isNew(prevProps,nextProps)[key] )
+			.forEach(name=>{
+				let eventType = name.toLowerCase().substring(2);
+				dom.removeListener(eventType, prevProps[name]);
+			})
+			//删除旧的props
+			Object.keys(prevProps)
+			.filter(isProperty)
+			.filter(isGone(prevProps,nextProps))
+			.forEach((name)=>{
+				dom[name] = '';
+			})
+			//添加新的Prop 或者 改变的prop
+			Object.keys(nextProps)
+			.filter(isProperty)
+			.filter(isNew(prevProps, nextProps))
+			.forEach((name)=>{
+				dom[name] = nextProps[name];
+			})
+			//添加新的事件
+			Object.keys(nextProps)
+			.filter(isEvent)
+			.filter(isNew(prevProps, nextProps))
+			.forEach(name => {
+				let eventType = name.toLowerCase().substring(2);
+				dom.removeListener(eventType, prevProps[name]);
+			})
+
+		}
+	```
+	
