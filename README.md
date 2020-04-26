@@ -604,9 +604,10 @@
 	```
 2. 增加处理函数组件的方法
 	- 根据fiber type进行不同的处理, `updateHostComponent`方法跟之前一样，`updateFunctionComponent`来处理函数类型的组件；
+	
 	```javascript
 		function performUnitOfWork(fiber){
-            //主要做三步1.add dom node  2.create new fiber  3.return next unit of work
+			//主要做三步1.add dom node  2.create new fiber  3.return next unit of work
             //1.创建当前fiber的DOM添加到dom属性上。
             const isFunctionComponent = 
                 fiber.type instanceof Function;
@@ -643,7 +644,7 @@
 	- 继续实现`updateFunctionComponent`, 获取了children，`reconcileChildren`就按部就班的进行，不需要更改。
 	```javascript
 		function updateFunctionComponent(fiber) {
-            //调用函数获取children
+        	//调用函数获取children
             const children = [fiber.type(fiber.props)];
             reconcileChildren(fiber, children);
         }
