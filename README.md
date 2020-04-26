@@ -13,6 +13,7 @@
 - Step 7: 函数组件Function Components
 - Step 8: Hooks
 ---
+
 ## 回顾
 了解React，JSX和DOM元素的工作原理
 1. React能做的 
@@ -62,7 +63,7 @@
 4. 到此，我们已经把一组react元素渲染到React;
 ---
 
-### createElement Function
+## createElement Function
 
 1. 把JSX返回的js对象，创建成还有props、children的对象
     ```javascript
@@ -144,7 +145,7 @@
     ```    
 ---
 
-### render Function
+## render Function
 
 1. 先考虑往DOM添加内容，稍后处理更新和删除
     ```javascript
