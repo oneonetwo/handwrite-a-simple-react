@@ -769,7 +769,7 @@
 	}
 	```
 	
-## > 引用
+> 参考链接
 >> 1. https://react.docschina.org/docs/design-principles.html
 >> 2. https://github.com/reactjs/zh-hans.reactjs.org/blob/master/content/docs/faq-internals.md
 >> 3. https://github.com/acdlite/react-fiber-architecture
