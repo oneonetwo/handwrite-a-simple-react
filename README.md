@@ -197,7 +197,7 @@
     ```
 ---
 
-### [任务调度](https://github.com/acdlite/react-fiber-architecture#scheduling)
+## [任务调度](https://github.com/acdlite/react-fiber-architecture#scheduling)
 1. 确定react何时进行更新渲染工作；
     - 上面render方法中，递归渲染每个元素，一旦渲染开始，就会到整个DOM树完成才会结束，如果元素结构很复杂，那将会渲染很长的时间阻塞主线程，而且浏览器如果需要处理更高优先的操作（例如用户输入或保持动画的流畅），则需要等到渲染完成。
     - 因此需要把工作分成多个单元来操作，在完成一个单元后，如果需要执行其他的高优先级的操作，那么让浏览器中断渲染。
@@ -230,7 +230,7 @@
     ```
 ---
 
-### [构建Fibers](https://github.com/acdlite/react-fiber-architecture#what-is-a-fiber)
+## [构建Fibers](https://github.com/acdlite/react-fiber-architecture#what-is-a-fiber)
 1. 概念：
 	- Fiber	
     	1. 主要目的是进行**增量式渲染**，将任务切片。并且分布到多个帧；
@@ -323,7 +323,7 @@
 	```
 ---
 
-### Render阶段 Commit阶段
+## Render阶段 Commit阶段
 1. 这时还有个问题，当浏览器中断工作时，我们将看不到完成的UI，所以我们要修改dom挂载的部分
 	```javascript
 	function render(element, container) {
@@ -367,7 +367,7 @@
 	```
 ---
 
-### [reconciliation](https://github.com/acdlite/react-fiber-architecture#what-is-reconciliation)
+## [reconciliation](https://github.com/acdlite/react-fiber-architecture#what-is-reconciliation)
 
 1. 概念：
 	- 作用
@@ -573,7 +573,7 @@
 	```
 ---
 
-### 函数组件 Function Components
+## 函数组件 Function Components
 1. 添加对函数组件的支持
 	- 函数组件有两点不同
 		1. 函数组件中没有DOM节点；
@@ -692,4 +692,4 @@
 	```
 ---
 
-### HOOKS
+## HOOKS
