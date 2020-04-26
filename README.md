@@ -575,14 +575,14 @@
 	```
 ---
 
-### 函数组件Function Components
+### 函数组件 Function Components
 1. 添加对函数组件的支持
 	- 函数组件有两点不同
 		1. 函数组件中没有DOM节点；
 		2. children来自函数调用。
 	```javascript
 		function App(props) {
-		  return <h1>Hi {props.name}</h1>
+			return <h1>Hi {props.name}</h1>
 		}
 		const element = <App name="foo" />
 		const container = document.getElementById("root")
