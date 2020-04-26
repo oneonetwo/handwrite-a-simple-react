@@ -676,7 +676,7 @@
 				// s-
 				//domParent.removeChild(fiber.dom)
 				//s+
-					commitDeletion(fiber, domParent);
+				commitDeletion(fiber, domParent);
 				//e+
 			}    
 
