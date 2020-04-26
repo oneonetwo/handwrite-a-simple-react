@@ -772,8 +772,9 @@
 > 引用
 >> 1. https://react.docschina.org/docs/design-principles.html
 >> 2. https://github.com/reactjs/zh-hans.reactjs.org/blob/master/content/docs/faq-internals.md
->> 3. https://pomb.us/
->> 4. https://react.jokcy.me/book/
+>> 3. https://github.com/acdlite/react-fiber-architecture
+>> 4. https://pomb.us/
+>> 5. https://react.jokcy.me/book/
 	
 	
 
