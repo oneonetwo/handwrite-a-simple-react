@@ -1,7 +1,7 @@
 # A Simple React
 
 [Demo](https://oneonetwo.github.io/handwrite-a-simple-react/)
-遵循React的Fiber架构，一步步实现自己的React,暂时不做优化，不实现复杂的功能；  
+遵循React的Fiber架构，一步步实现自己的mini版本React，以此深入的Fiber架构深层的原理。  
 
 我们需要做的事情: 
 - Step 1: createElement Function
@@ -10,7 +10,7 @@
 - Step 4: 构建Fibers
 - Step 5: Render阶段 Commit阶段
 - Step 6: Reconciliation
-- Step 7: Function Components
+- Step 7: 函数组件
 - Step 8: Hooks
 ---
 ## 回顾
