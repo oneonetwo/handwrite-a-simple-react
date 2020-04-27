@@ -406,7 +406,7 @@
 		//添加old fiber的子级，赋值给oldFiber;
 		let oldFiber = wipFiber.alternate?.child;
 		let prevSibling = null;
-		while(index<element.length && oldFiber!= null){
+		while(index<element.length || oldFiber!= null){
 			let element = elements[index];
 			let newFiber = null;
 
@@ -581,7 +581,7 @@
 		.filter(isNew(prevProps, nextProps))
 		.forEach(name => {
 			let eventType = name.toLowerCase().substring(2);
-			dom.addEventListener(eventType, prevProps[name]);
+			dom.addEventListener(eventType, nextProps[name]);
 		})
 	}
 	```
@@ -678,7 +678,7 @@
 			domParent.appendChild(fiber.dom)
 		}else if(fiber.effectTag === "UPDATE" && fiber.dom != null){
 			//fiber标记是Update，使用fiber更新现有的节点;
-			updateDOM(
+			updateDom(
 				fiber.dom,
 				fiber.alternate.props,
 				fiber.props
