@@ -208,14 +208,14 @@
 3. 实现 wookloop方法
     ```javascript
 	//全局变量，当前的工作单元Fiber
-	let nextUnitOfwork = null;
+	let nextUnitOfWork = null;
 
 	//workLoop逻辑很简单的，只是判断是否需要继续调用performUnitOfWork；
 	function workloop(deadline) {
 		let shouldYield = false;
-		while(nextUnitOfwork&&!shouldYield){
-			nextUnitOfwork = performUnitOfwork(
-				nextUnitOfwork
+		while(nextUnitOfWork&&!shouldYield){
+			nextUnitOfWork = performUnitOfWork(
+				nextUnitOfWork
 			)
 			shouldYield = deadline.timeRemaining()<1;
 		}
@@ -224,7 +224,7 @@
 
 	requestIdleCallback(workloop);
 
-	function performUnitOfwork(nextUnitOfwork){
+	function performUnitOfWork(nextUnitOfWork){
 		//TODO
 	}
 
