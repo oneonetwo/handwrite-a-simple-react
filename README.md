@@ -482,7 +482,8 @@
 		}
 	}
 	```
-	- 更改`commitWork`处理 effectTags
+	- 更改`commitWork`函数
+        1. 根据 fiber.effectTags ,删除旧的节点，添加新的节点，更新类型相同的节点
 	```javascript
     function commitRoot(){
         //1.删除deletions  
