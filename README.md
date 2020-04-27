@@ -484,6 +484,14 @@
 	```
 	- 更改`commitWork`处理 effectTags
 	```javascript
+    function commitRoot(){
+        //1.删除deletions  
+        deletions.forEach(commitWork);
+        commitWork(wipRoot.child);
+        currentRoot = wipRoot;
+        wipRoot = null;
+    }
+    
 	function commitWork(fiber) {
 		if (!fiber) {
 			return
