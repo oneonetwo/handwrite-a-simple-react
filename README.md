@@ -66,7 +66,7 @@
 
 ## createElement Function
 
-1. 把JSX返回的js对象，创建成还有props、children的对象
+1. 作用：把JSX返回的js对象，创建成包含props、children的js对象
     ```javascript
 	const element = (
 		<div id="foo">
