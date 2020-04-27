@@ -406,7 +406,7 @@
 		//添加old fiber的子级，赋值给oldFiber;
 		let oldFiber = wipFiber.alternate?.child;
 		let prevSibling = null;
-		while(index<element.length || oldFiber!= null){
+		while(index<element.length && oldFiber!= null){
 			let element = elements[index];
 			let newFiber = null;
 
@@ -436,7 +436,7 @@
 		//添加old fiber的子级，赋值给oldFiber;
 		let oldFiber = wipfiber.alternate?.child;
 		let prevSibling = null;
-		while(index<element.length || oldFiber!= null){
+		while(index<element.length && oldFiber!= null){
 			let element = elements[index];
 			let newFiber = null;
 
@@ -556,10 +556,10 @@
 		Object.keys(prevProps)
 		.filter(isEvent)
 		.filter(key=>
-			!(key in nextProps) || isNew(prevProps,nextProps)[key] )
+			!(key in nextProps) || isNew(prevProps,nextProps)(key))
 		.forEach(name=>{
 			let eventType = name.toLowerCase().substring(2);
-			dom.removeListener(eventType, prevProps[name]);
+			dom.removeEventListener(eventType, prevProps[name]);
 		})
 		//删除旧的props
 		Object.keys(prevProps)
@@ -581,7 +581,7 @@
 		.filter(isNew(prevProps, nextProps))
 		.forEach(name => {
 			let eventType = name.toLowerCase().substring(2);
-			dom.removeListener(eventType, prevProps[name]);
+			dom.addEventListener(eventType, prevProps[name]);
 		})
 	}
 	```
