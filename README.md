@@ -483,7 +483,7 @@
 	}
 	```
 	- 更改`commitWork`函数
-        1. 根据 fiber.effectTags ,删除旧的节点，添加新的节点，更新类型相同的节点
+        1. 它是根据 fiber.effectTags ,删除旧的节点，添加新的节点，更新类型相同的节点
 	```javascript
     function commitRoot(){
         //1.删除deletions  
@@ -521,7 +521,7 @@
 	  // TODO
 	}
 	```
-	- `updateDom`函数，处理fiber.effectTags = "UPDATE"的dom，新旧props做对比，删除旧的prop,添加新的prop;
+	- 实现`updateDom`函数，处理fiber.effectTags = "UPDATE"的dom，新旧props做对比，删除旧的prop,添加新的prop;
 	```javascript
 	const isProperty = key => key !== "children";
 	const isNew = (prev,next) => key => prev[key] !== next[key];
@@ -545,8 +545,12 @@
 		})
 	}
 	```
-	- 完善updateDom(), 对特殊props 事件的处理；
+	- 完善`updateDom`函数, 对特殊props 事件的处理；
 	```javascript
+    const isEvent = key => key.startsWith('on');
+    const isProperty = key => key!=='children'&&!isEvent(key);
+    const isNew = (prev, next) => key=>prev[key] !== next[key];
+    const isGone = (prev, next) => key => !(key in next);
 	function updateDom(dom, prevProps, nextProps) {
 		//移除旧的或者改变的事件
 		Object.keys(prevProps)
@@ -615,7 +619,7 @@
 	```javascript
 	function performUnitOfWork(fiber){
 		//主要做三步1.add dom node  2.create new fiber  3.return next unit of work
-		//1.创建当前fiber的DOM添加到dom属性上。
+		//1.创建当前fiber的DOM添加到dom属性上。 2.为每个child创建fiber
 		const isFunctionComponent = 
 			fiber.type instanceof Function;
 		if(isFunctionComponent){
@@ -623,7 +627,7 @@
 		}else{
 			updateHostComponent(fiber);
 		}
-
+        
 		//3.找下一个fiber(工作单元)，深度优先遍历，先子后兄，再parent的兄弟
 		if(fiber.child){
 			return fiber.child;
@@ -636,11 +640,11 @@
 			nextFiber = newFiber.parent;
 		}
 	}
-
+    //处理函数组件的fiber
 	function updateFunctionComponent(fiber) {
 		// TODO
 	}
-
+    //处理元素组件的fiber
 	function updateHostComponent(fiber) {
 		if (!fiber.dom) {
 			fiber.dom = createDom(fiber)
