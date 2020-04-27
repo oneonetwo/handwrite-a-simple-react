@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+    <div id="root"></div>
+<script>
+//全局变量
+let nextUnitOfWork = null;  //下一个工作的单元fiber
+let wipRoot = null;         //root fiber
+let currentRoot = null;     //旧树,每次工作完成之前需要把这个放到 wipRoot的alternate上
+let deletions = null;       //放入每次渲染要删除的fiber
+
+//实现一个 createElement,为文本节点创建一个特殊的类型：TEXT_ELEMENT
+function createElement(type, props, ...children){
+    return {
+        type,
+        props: {
+            ...props,
+            children: children.map((child)=>{
+                return typeOf child === 'object'
+                ? child
+                : createTextElement(child);
+            })
+        }
+    }
+}  
+function createTextElement(text){
+    return {
+        type: "TEXT_ELEMENT",
+        props: {
+            valueNode: text,
+            children: []
+        }
+    }
+}
+//设置`nextUnitOfWork`为fiber的root
+function render(element, container){
+    wipRoot  = {
+        dom: container,
+        props: {
+            children: [element],
+        },
+        alternate: currentRoot
+    }
+    nextUnitOfWork = wipRoot;
+}
+
+//将创建DOM节点保留在自身的dom,挂在到fiber
+function createDom(fiber){
+    const dom = element.type === 'TEXT_ELEMENT'
+        ?document.createTextNode('')
+        :document.createElement(element.type);
+
+    //添加dom的props
+    const isProperty = key => key !== 'children';
+    Object.keys(element.props)
+        .filter(isProperty)
+        .forEach( name =>{
+            dom[name] = element.props[name];
+    })
+    return;
+}
+
+//任务调度
+function workloop(deadline){
+    let shouldYield = false;
+    while(nextUnitOfWork&&!shouldYield){
+        nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
+        shouldYield = deadline.timeRemaining() < 1;
+    }
+    //一旦没有下一个fiber 那么表示工作完成，调用commitRoot把整个fiber添加到Dom
+    if(!nextUnitOfWork && wipRoot){
+        commitRoot();
+    }
+
+    requestIdleCallback(workloop);
+}
+requestIdleCallback(workloop);
+
+//在commitRoot函数中将所有节点递归到Container。
+function commitRoot(){
+    //删除旧的fiber的DOM
+    deletions.forEach(commitWork);
+    //add nodes to dom
+    commitWork(wipRoot.child);
+    currentRoot = wipRoot;
+    wipRoot = null;
+}
+
+//commitWork中，删除旧的节点，添加新的节点，更新类型相同的节点
+function commitWork(fiber){
+    if(!fiber){
+        return;
+    }
+    //如果是函数组件，则需要找见能够添加dom的父元素
+    let domParendFiber = fiber.parent;
+    while(!domParend.dom){
+        domParendFiber = domParendFiber.parent;
+    }
+    let domParend = domParendFiber.dom;
+
+
+    //更改commitWork处理 effectTags
+    if(fiber.effectTag === "PLACEMENT" && fiber.dom!==null){
+        //fiber标记是PLACEMENT，则与之前相同，将DOM节点追加到父节点;
+        domParent.appendChild(fiber.dom)
+    }else if(fiber.effectTag === "UPDATE" && fiber.dom != null){
+        //fiber标记是Update，使用fiber更新现有的节点;
+        updateDOM(
+            fiber.dom,
+            fiber.alternate.props,
+            fiber.props
+        )
+    }else if(fiber.effectTag === "DELETION"){
+        //fiber标记是DELETION，则从父节点中移除当前的节点;
+        commitDeletion(fiber, domParent);
+    }    
+
+    commitWork(fiber.child);
+    commitWork(fiber.sibling);
+}
+
+//删除旧的fiber的dom，如果是函数组件则向child找dom
+function commitDeletion(fiber,domParent){
+    if(fiber.dom){
+        domParent.removeChild(fiber.dom);  
+    }else{
+        commitDeletion(fiber.child, domParent);
+    }
+}
+//updateDom函数，处理fiber.effectTags = "UPDATE"的dom，新旧props做对比，删除旧的prop,添加新的prop;
+const isProperty = key => key !== "children";
+const isNew = (prev,next) => key => prev[key] !== next[key];
+const isGone = (prev, next) => key => !(key in next);
+
+function updateDom(dom, prevProps, nextProps) {
+    //移除旧的或者改变的事件
+    Object.keys(prevProps)
+    .filter(isEvent)
+    .filter(key=>
+        !(key in nextProps) || isNew(prevProps,nextProps)[key] )
+    .forEach(name=>{
+        let eventType = name.toLowerCase().substring(2);
+        dom.removeListener(eventType, prevProps[name]);
+    })
+    //删除旧的props
+    Object.keys(prevProps)
+    .filter(isProperty)
+    .filter(isGone(prevProps,nextProps))
+    .forEach((name)=>{
+        dom[name] = '';
+    })
+    //添加新的Prop 或者 改变的prop
+    Object.keys(nextProps)
+    .filter(isProperty)
+    .filter(isNew(prevProps, nextProps))
+    .forEach((name)=>{
+        dom[name] = nextProps[name];
+    })
+    //添加新的事件
+    Object.keys(nextProps)
+    .filter(isEvent)
+    .filter(isNew(prevProps, nextProps))
+    .forEach(name => {
+        let eventType = name.toLowerCase().substring(2);
+        dom.removeListener(eventType, prevProps[name]);
+    })
+}
+//当浏览器空闲时，启动workloop，performUnitOfWork运行root fiber
+function performUnitOfWork(fiber){
+    //主要做三步1.add dom node  2.create new fiber  3.return next unit of work
+    //1.创建当前fiber的DOM添加到dom属性上。
+    const isFunctionComponent = 
+            fiber.type instanceof Function;
+        if(isFunctionComponent){
+            updateFunctionComponent(fiber);
+        }else{
+            updateHostComponent(fiber);
+    }
+    //2.为每个child创建fiber
+    const elements = fiber.props.children;
+    reconcileChildren(fiber, elements)
+
+    //查找下个工作单元，深度优先遍历，先子后兄，再parent的兄弟
+    if(fiber.child){
+        return fiber.child;
+    }
+    let nextFiber = fiber;
+    while(nextFiber){
+        if(nextFiber.sibling){
+            return nextFiber.sibling;
+        }else{
+            nextFiber = fiber.parent;
+        }        
+    }
+}
+//处理元素组件的fiber
+function updateHostComponent(fiber) {
+    if (!fiber.dom) {
+        fiber.dom = createDom(fiber)
+    }
+    reconcileChildren(fiber, fiber.props.children)
+}
+//处理函数组件的fiber
+function updateFunctionComponent(fiber){
+   //获取了children，`reconcileChildren`就按部就班的进行，不需要多余更改。
+   const children = [fiber.type(fiber.props)];
+   reconcileChildren(fiber, children);
+}
+
+//提取创建fiber的代码，放到reconcileChildren中
+function reconcileChildren(wipFiber, elements){
+    let index = 0;
+    //添加old fiber的子级，赋值给oldFiber;
+    let oldFiber = wipFiber.alternate?.child;
+    let prevSibling = null;
+    while(index<elements.length|| oldFiber!= null){
+        
+        let element = elements[index];
+        let newFiber = null;
+        let sameType = element&&oldFiber&&element.type === oldFiber.type;
+        if(sameType){
+            //同类型的元素，进行 update
+            newFiber = {
+                type: element.type,
+                props: element.props,
+                dom: oldFiber.dom,
+                parent: wipFiber,
+                alternate: oldFiber,
+                effectTag: 'UPDATE'
+            }
+        }
+        if(element && !sameType){
+            //不同类型的元素，进行 add
+            newFiber = {
+                type: element.type,
+                props: element.props,
+                dom: null,
+                parent: wipFiber,
+                alternate: null,
+                effectTag: 'PLACEMENT'
+            }
+        }
+        if(oldFiber && !sameType){
+            //element不存在，进行删除oldFiber
+            oldFiber.effectTag = "DELETION";
+            deletions.push(oldFiber);
+        }
+
+        //获取链表的下一个元素，进行比较
+        if (oldFiber) {
+            oldFiber = oldFiber.sibling;
+            deletions.push(oldFiber);
+        }
+
+        //创建一个兄弟链表,首个孩子为头部
+        if(index === 0){
+            fiber.child = newFiber;            
+        }else{
+            prevSibling.sibling = newFiber;
+        }
+        prevSibling = newFiber;
+        index++;
+    }
+}
+
+
+
+const MReact = {
+    createElement,
+    render,
+    useState
+}
+
+/** @jsx MReact.createElement  直接用jsx转移之后的 */
+function Counter(){
+    const [state, setState] = MReact.useState(0);
+
+    clickHandle = () =>{
+        setState(state+1);
+    }
+    return MReact.createElement(
+        "h1",
+        { 
+            onClick: ()=>clickHandle(),
+            style: 'color: #445ad6'
+        },
+        "You clicked",
+         state,
+         "times"
+    )
+}
+
+function App(){
+    return MReact.createElement(
+            Counter,
+            null
+        )
+       
+}
+const element = App();
+const container = document.getElementById("root");
+MReact.render(element, container);
+
+</script>    
+</body>
+</html>
