@@ -13,6 +13,10 @@ let wipRoot = null;         //root fiber
 let currentRoot = null;     //旧树,每次工作完成之前需要把这个放到 wipRoot的alternate上
 let deletions = null;       //放入每次渲染要删除的fiber
 
+//在调用函数组件之前初始化一些变量，方便再 useState函数内部使用他们
+let wipFiber = null;    //当前的函数组件
+let hookIndex = null;   //当前hook的索引
+
 //实现一个 createElement,为文本节点创建一个特殊的类型：TEXT_ELEMENT
 function createElement(type, props, ...children){
     return {
@@ -132,10 +136,10 @@ function commitDeletion(fiber,domParent){
     }
 }
 //updateDom函数，处理fiber.effectTags = "UPDATE"的dom，新旧props做对比，删除旧的prop,添加新的prop;
-const isProperty = key => key !== "children";
-const isNew = (prev,next) => key => prev[key] !== next[key];
+const isEvent = key => key.startsWith('on');
+const isProperty = key => key!=='children'&&!isEvent(key);
+const isNew = (prev, next) => key=>prev[key] !== next[key];
 const isGone = (prev, next) => key => !(key in next);
-
 function updateDom(dom, prevProps, nextProps) {
     //移除旧的或者改变的事件
     Object.keys(prevProps)
@@ -206,6 +210,13 @@ function updateHostComponent(fiber) {
 }
 //处理函数组件的fiber
 function updateFunctionComponent(fiber){
+
+    //初始化
+    wipFiber = fiber;
+    //向fiber添加一个数组，支持再函数组件中调用多次，记录当前的hooks的索引;
+    hookIndex = 0;
+    wipFiber.hooks = [];
+
    //获取了children，`reconcileChildren`就按部就班的进行，不需要多余更改。
    const children = [fiber.type(fiber.props)];
    reconcileChildren(fiber, children);
@@ -267,6 +278,23 @@ function reconcileChildren(wipFiber, elements){
     }
 }
 
+
+
+function useState(initial){
+    let oldHook = wipFiber.alternate?.hooks?.[hookIndex];
+    let hook = {
+        state: oldHook?oldHook.state:initial,
+        queue:[] 
+    }
+    const actions = oldHook?oldHook.queue:[];
+    actions.forEach(action=>{
+
+    })
+    
+
+    wipFiber.hooks.push(hook);
+    return [state, setState];
+}
 
 
 const MReact = {
