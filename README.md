@@ -521,7 +521,7 @@
 	  // TODO
 	}
 	```
-	- 继续 updateDom, 新旧props做对比，删除旧的prop,添加新的prop;
+	- `updateDom`函数，处理fiber.effectTags = "UPDATE"的dom，新旧props做对比，删除旧的prop,添加新的prop;
 	```javascript
 	const isProperty = key => key !== "children";
 	const isNew = (prev,next) => key => prev[key] !== next[key];
