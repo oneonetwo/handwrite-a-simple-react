@@ -28,7 +28,7 @@
     ```
 2. JSX
     - Babel把JSX转义，并且调用用`createElement`替换每个Tag
-    ```javascript 12
+    ```javascript
 	//Babel转义
 	const element = React.createElement(
 		'h1',
@@ -159,7 +159,7 @@
     ```javascript
 	function render(element, container){
 		const dom = document.createElement(element.type);
-		element.props.children,forEach((child)=>{
+		element.props.children.forEach((child)=>{
 			render(child, dom);
 		})
 		container.appendChild(dom);
