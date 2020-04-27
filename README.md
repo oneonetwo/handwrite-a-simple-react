@@ -281,7 +281,7 @@
 		//主要做三步1.add dom node  2.create new fiber  3.return next unit of work
 		//1.创建当前fiber的DOM添加到dom属性上。
 		if(!fiber.dom){
-			fiber.dom = create(fiber);
+			fiber.dom = createDom(fiber);
 		}			
 		if (fiber.parent) {
 			fiber.parent.dom.appendChild(fiber.dom)
