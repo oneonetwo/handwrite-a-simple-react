@@ -39,10 +39,10 @@
     ```javascript
     //调用createElement返回
 	const element = {
-	   type: 'h1',
-	   props: {
-		   title: 'foo',
-		   children: 'hello'
+	    type: 'h1',
+	    props: {
+		    title: 'foo',
+		    children: 'hello'
 	   }
 	}
     ```
@@ -218,7 +218,6 @@
 	function performUnitOfWork(nextUnitOfWork){
 		//TODO
 	}
-
     ```
 ---
 ## [构建Fibers](https://github.com/acdlite/react-fiber-architecture#what-is-a-fiber)
@@ -738,7 +737,6 @@
 	- `useState方法`应该还要返回一个更新状态的函数，一次定义一个`setState方法`，来接受更新动作，该动作将添加到钩子的queue中；
 	```javascript
 	function useState(initial){
-
 		const oldHook = wipFiber.alternate?.hooks?.[hookIndex];
 		const hook = {
 			state: oldHook?oldHook.state:initial,
@@ -766,9 +764,9 @@
 		hookIndex++;
 		return [hook.state, setState];
 	}
-	```	
-> 参考链接
->> 1. https://react.docschina.org/docs/design-principles.html
->> 2. https://github.com/reactjs/zh-hans.reactjs.org/blob/master/content/docs/faq-internals.md
->> 3. https://github.com/acdlite/react-fiber-architecture
->> 4. https://react.jokcy.me/
+	```
+#### 参考链接
+1. https://react.docschina.org/docs/design-principles.html
+2. https://github.com/reactjs/zh-hans.reactjs.org/blob/master/content/docs/faq-internals.md
+3. https://github.com/acdlite/react-fiber-architecture
+4. https://react.jokcy.me/
