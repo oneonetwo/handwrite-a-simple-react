@@ -16,8 +16,8 @@
     - 1.定义一个React元素。
     - 2.从DOM获取一个节点。
     - 3.将React元素渲染到容器中。
-    ```javascript
-	const element = <h1 title="foo">Hello</h1>
-	const container = document.getElementById("root")
-	ReactDOM.render(element, container)
-    ```
+```javascript
+const element = <h1 title="foo">Hello</h1>
+const container = document.getElementById("root")
+ReactDOM.render(element, container)
+```
