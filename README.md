@@ -23,7 +23,7 @@ const container = document.getElementById("root")
 ReactDOM.render(element, container)
 ```
 2. JSX
-    - Babel把JSX转义，并且调用用`createElement`替换每个Tag
+-   - Babel把JSX转义，并且调用用`createElement`替换每个Tag
 ```javascript
 //Babel转义
 const element = React.createElement(
@@ -32,7 +32,7 @@ const element = React.createElement(
     'hello'
 )
 ```
-    - `React.createElement`根据参数返回一个js对象，这就是元素，具有两个属性（type和props，它具有更多的属性，我们目前只使用这两个）
+-   - `React.createElement`根据参数返回一个js对象，这就是元素，具有两个属性（type和props，它具有更多的属性，我们目前只使用这两个）
         1. type 是指定节点类型，也可以是一个函数 
         2. props是个对象，包含了当前节点的所有的属性的键值，还有一个很重要的属性： children;
         3. children如果是个数组，可以包含多个子节点，如果是个字符串，表示个是文本节点
@@ -260,7 +260,7 @@ function render(element, container) {
 
 let nextUnitOfWork = null;		
 ```
-	- 当浏览器空闲时，启动workloop，`performUnitOfWork`运行root fiber
+-	- 当浏览器空闲时，启动workloop，`performUnitOfWork`运行root fiber
 ```javascript
 function performUnitOfWork(fiber){
     //主要做三步1.add dom node  2.create new fiber  3.return next unit of work
@@ -378,7 +378,7 @@ function render(element, container){
 //+ 全局变量
 let currentRoot = null;
 ```
-	- 在`performUnitOfWork`提取创建fiber的代码，放到`reconcileChildren`中
+-	- 在`performUnitOfWork`提取创建fiber的代码，放到`reconcileChildren`中
 ```javascript
 function reconcileChildren(wipFiber, elements){
     let index = 0;    
@@ -407,7 +407,7 @@ function reconcileChildren(wipFiber, elements){
     }
 }
 ```
-	- 继续完善，我们在Fiber上添加 `effectTag`属性，做标记；将会在commitRoot阶段使用这个属性
+-   - 继续完善，我们在Fiber上添加 `effectTag`属性，做标记；将会在commitRoot阶段使用这个属性
 ```javascript
 function reconcileChildren(wipfiber, elements){
     let index = 0;    
@@ -459,7 +459,7 @@ function reconcileChildren(wipfiber, elements){
     }
 }
 ```
-	- 更改`commitWork`函数
+-	- 更改`commitWork`函数
         1. 它是根据 fiber.effectTags ,删除旧的节点，添加新的节点，更新类型相同的节点
 ```javascript
 function commitRoot(){
@@ -496,7 +496,7 @@ function updateDom(dom, prevProps, nextProps) {
     // TODO
 }
 ```
-	- 实现`updateDom`函数，处理fiber.effectTags = "UPDATE"的dom，新旧props做对比，删除旧的prop,添加新的prop;
+-	- 实现`updateDom`函数，处理fiber.effectTags = "UPDATE"的dom，新旧props做对比，删除旧的prop,添加新的prop;
 ```javascript
 const isProperty = key => key !== "children";
 const isNew = (prev,next) => key => prev[key] !== next[key];
@@ -519,7 +519,7 @@ function updateDom(dom, prevProps, nextProps) {
     })
 }
 ```
-	- 完善`updateDom`函数, 对特殊props 事件的处理；
+-	- 完善`updateDom`函数, 对特殊props 事件的处理；
 ```javascript
 const isEvent = key => key.startsWith('on');
 const isProperty = key => key!=='children'&&!isEvent(key);
@@ -622,7 +622,7 @@ function updateHostComponent(fiber) {
     reconcileChildren(fiber, fiber.props.children)
 }
 ```
-	- 继续实现`updateFunctionComponent`, 获取了children，`reconcileChildren`就按部就班的进行，不需要更改。
+-	- 继续实现`updateFunctionComponent`, 获取了children，`reconcileChildren`就按部就班的进行，不需要更改。
 ```javascript
 function updateFunctionComponent(fiber) {
     //调用函数获取children
@@ -630,7 +630,7 @@ function updateFunctionComponent(fiber) {
     reconcileChildren(fiber, children);
 }
 ```
-	- 需要修改 `commitWork`函数，因为函数组件没有DOM节点，所以children需要挂到有DOM的patent上；
+-	- 需要修改 `commitWork`函数，因为函数组件没有DOM节点，所以children需要挂到有DOM的patent上；
 ```javascript
 function commitWork(fiber) {
     if (!fiber) {
@@ -718,7 +718,7 @@ function useState(initial){
     return [hook.state];
 }
 ```
-	- `useState方法`应该还要返回一个更新状态的函数，一次定义一个`setState方法`，来接受更新动作，该动作将添加到钩子的queue中；
+-	- `useState方法`应该还要返回一个更新状态的函数，一次定义一个`setState方法`，来接受更新动作，该动作将添加到钩子的queue中；
 ```javascript
 function useState(initial){
     const oldHook = wipFiber.alternate?.hooks?.[hookIndex];
