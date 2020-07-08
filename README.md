@@ -10,8 +10,7 @@
 - Step 6: Reconciliation
 - Step 7: 函数组件Function Components
 - Step 8: Hooks
-## 回顾
-- 了解React，JSX和DOM元素的工作原理
+## 回顾 了解React，JSX和DOM元素的工作原理
 1. React能做的 
     - 1.定义一个React元素。
     - 2.从DOM获取一个节点。
