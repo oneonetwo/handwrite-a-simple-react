@@ -10,7 +10,6 @@
 - Step 6: Reconciliation
 - Step 7: 函数组件Function Components
 - Step 8: Hooks
----
 ## 回顾
 了解React，JSX和DOM元素的工作原理
 1. React能做的 
